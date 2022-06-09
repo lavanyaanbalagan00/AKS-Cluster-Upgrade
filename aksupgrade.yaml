@@ -1,0 +1,36 @@
+steps:
+- task: KubectlInstaller@0
+  displayName: 'Install Kubectl latest'
+steps:
+- task: Kubernetes@1
+  displayName: 'list namespaces'
+  inputs:
+    kubernetesServiceEndpoint: <Cluster name>
+    command: get
+    arguments: |
+     namespaces  -o=jsonpath='{.items[*].metadata.name}'
+     
+    outputFormat: none
+steps:
+- task: Kubernetes@1
+  displayName: 'Deploy support pod'
+  inputs:
+    kubernetesServiceEndpoint: <Cluster name>
+    command: get
+    arguments: 'pods -n smsupport  -o=jsonpath=''{.items[*].metadata.name}'''
+    outputFormat: none
+variables:
+  kubernetes-version: '1.21.7'
+
+steps:
+- task: AzureCLI@2
+  displayName: 'Azure CLI '
+  inputs:
+    azureSubscription: <subscription name>
+    scriptType: batch
+    scriptLocation: inlineScript
+    inlineScript: |
+     az aks upgrade --resource-group <Cluster Resource Group> --name <Cluster Name> --kubernetes-version  $(kubernetes-version) --yes
+     
+
+
